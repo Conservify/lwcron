@@ -6,6 +6,23 @@
 
 namespace lwcron {
 
+struct TimeOfDay {
+    uint8_t second;
+    uint8_t minute;
+    uint8_t hour;
+    uint32_t remainder;
+
+    TimeOfDay(uint32_t t) {
+        second = t % 60;
+        t /= 60;
+        minute = t % 60;
+        t /= 60;
+        hour = t % 24;
+        t /= 24;
+        remainder = t;
+    }
+};
+
 class DateTime {
 private:
     uint16_t year_{ 0 };
@@ -106,15 +123,39 @@ public:
 
 };
 
-static inline bool bitarray_test(uint8_t *p, uint32_t n) {
+template<size_t N>
+bool bitarray_any(uint8_t (&bytes)[N]) {
+    for (auto i = (size_t)0; i < N; ++i) {
+        if (bytes[i] > 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+template<size_t N>
+static inline bool bitarray_test(uint8_t (&p)[N], uint32_t n) {
     return p[n / 8] & (0x1 << (n % 8));
 }
 
-static inline void bitarray_set(uint8_t *p, uint32_t n) {
+template<size_t N>
+uint32_t bitarray_nset(uint8_t (&bytes)[N]) {
+    auto c = 0;
+    for (auto i = (size_t)0; i < N * 8; ++i) {
+        if (bitarray_test(bytes, i)) {
+            c++;
+        }
+    }
+    return c;
+}
+
+template<size_t N>
+static inline void bitarray_set(uint8_t (&p)[N], uint32_t n) {
     p[n / 8] |= (0x1 << (n % 8));
 }
 
-static inline void bitarray_clear(uint8_t *p, uint32_t n) {
+template<size_t N>
+static inline void bitarray_clear(uint8_t (&p)[N], uint32_t n) {
     p[n / 8] &= ~(0x1 << (n % 8));
 }
 
@@ -135,39 +176,15 @@ public:
     }
 
 public:
-    static CronSpec specific(uint8_t second, uint8_t minute = 0xff, uint8_t hour = 0xff) {
-        CronSpec cs;
-        bitarray_set(cs.seconds, second);
-        if (minute == 0xff) {
-            memset(cs.minutes, 0xff, sizeof(cs.minutes));
-        }
-        else {
-            bitarray_set(cs.minutes, minute);
-        }
-        if (hour == 0xff) {
-            memset(cs.hours, 0xff, sizeof(cs.hours));
-        }
-        else {
-            bitarray_set(cs.hours, hour);
-        }
-        return cs;
-    }
+    bool valid();
 
-    bool valid() {
-        return true;
-    }
+    void set(TimeOfDay tod);
 
-    // NOTE: This could be so much better.
-    uint32_t getNextTime(DateTime after) {
-        auto unix = after.unix();
-        for (auto i = 0; i < 3600 * 24; ++i) {
-            CronSpec cs{ unix + i };
-            if (matches(cs)) {
-                return unix + i;
-            }
-        }
-        return 0;
-    }
+    uint32_t getNextTime(DateTime after);
+
+    static CronSpec interval(uint32_t seconds);
+
+    static CronSpec specific(uint8_t second, uint8_t minute = 0xff, uint8_t hour = 0xff);
 
 private:
     bool matches(CronSpec cs) {

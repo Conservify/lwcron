@@ -226,3 +226,50 @@ TEST_F(SchedulerSuite, RunningTasksMultipleCrons) {
     DateTime time2(1982, 4, 24, 6, 20, 0);
     ASSERT_EQ(n2.time, time2.unix());
 }
+
+TEST_F(SchedulerSuite, RunningTasksMultipleCronsRecurringRuns) {
+    CronTask task1{ CronSpec::specific( 0, 20,  6) }; //  6:20AM
+    CronTask task2{ CronSpec::specific(30,  0, 12) }; // 12:00PM
+    Task *tasks[2] = { &task1, &task2 };
+    Scheduler scheduler{ tasks };
+
+    auto now = JacobsBirth;
+    scheduler.begin(now + 5);
+
+    ASSERT_FALSE(scheduler.check(now + 5));
+    auto n1 = scheduler.nextTask();
+    ASSERT_EQ(n1.task, &task2);
+    DateTime time1(1982, 4, 23, 12, 0, 30);
+    ASSERT_EQ(n1.time, time1.unix());
+
+    auto o1 = scheduler.check(time1);
+    ASSERT_EQ(o1.task, &task2);
+    ASSERT_FALSE(scheduler.check(time1));
+    auto n2 = scheduler.nextTask();
+    ASSERT_EQ(n2.task, &task1);
+    DateTime time2(1982, 4, 24, 6, 20, 0);
+    ASSERT_EQ(n2.time, time2.unix());
+}
+
+TEST_F(SchedulerSuite, CronSpecIntervals) {
+    auto everyMinute = CronSpec::interval(60);
+    ASSERT_EQ(bitarray_nset(everyMinute.seconds), 1);
+    ASSERT_EQ(bitarray_nset(everyMinute.minutes), 60);
+    ASSERT_EQ(bitarray_nset(everyMinute.hours), 24);
+
+    auto everyTwoMinutes = CronSpec::interval(60 * 2);
+    ASSERT_EQ(bitarray_nset(everyTwoMinutes.seconds), 1);
+    ASSERT_EQ(bitarray_nset(everyTwoMinutes.minutes), 30);
+    ASSERT_EQ(bitarray_nset(everyTwoMinutes.hours), 24);
+
+    auto everyHour = CronSpec::interval(60 * 60);
+    ASSERT_EQ(bitarray_nset(everyHour.seconds), 1);
+    ASSERT_EQ(bitarray_nset(everyHour.minutes), 1);
+    ASSERT_EQ(bitarray_nset(everyHour.hours), 24);
+
+    auto everySixHours = CronSpec::interval(60 * 60 * 6);
+    ASSERT_EQ(bitarray_nset(everySixHours.seconds), 1);
+    ASSERT_EQ(bitarray_nset(everySixHours.minutes), 1);
+    ASSERT_EQ(bitarray_nset(everySixHours.hours), 4);
+}
+

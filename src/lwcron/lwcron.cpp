@@ -4,6 +4,10 @@
 
 namespace lwcron {
 
+constexpr uint32_t SecondsPerYear = (60 * 60 * 24L * 365);
+constexpr uint32_t SecondsPerDay = 60 * 60 * 24L;
+constexpr uint32_t SecondsPerHour = 3600L;
+
 constexpr uint8_t DaysInMonth[] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
 constexpr bool is_leap_year(uint16_t year) {
@@ -17,12 +21,11 @@ DateTime::DateTime(uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uint
 DateTime::DateTime(uint32_t unix) {
     auto t = unix;
 
-    second_ = t % 60;
-    t /= 60;
-    minute_ = t % 60;
-    t /= 60;
-    hour_ = t % 24;
-    t /= 24;
+    TimeOfDay tod{ t };
+    second_ = tod.second;
+    minute_ = tod.minute;
+    hour_ = tod.hour;
+    t = tod.remainder;
 
     auto year = 70;
     auto days = 0;
@@ -60,10 +63,6 @@ DateTime::DateTime(uint32_t unix) {
 }
 
 uint32_t DateTime::unix() {
-    constexpr uint32_t SecondsPerYear = (60 * 60 * 24L * 365);
-    constexpr uint32_t SecondsPerDay = 60 * 60 * 24L;
-    constexpr uint32_t SecondsPerHour = 3600L;
-
     auto year = year_;
     auto seconds = (year - 1970) * SecondsPerYear;
     for (auto i = 1970; i < year; i++) {
@@ -101,6 +100,57 @@ uint32_t PeriodicTask::getNextTime(DateTime after) {
         return seconds;
     }
     return seconds + (interval_ - r);
+}
+
+CronSpec CronSpec::interval(uint32_t seconds) {
+    CronSpec cs;
+
+    for (uint32_t s = 0; s <= SecondsPerDay ; s += seconds) {
+        TimeOfDay tod{ s };
+        cs.set(tod);
+    }
+
+    return cs;
+}
+
+CronSpec CronSpec::specific(uint8_t second, uint8_t minute, uint8_t hour) {
+    CronSpec cs;
+    bitarray_set(cs.seconds, second);
+    if (minute == 0xff) {
+        memset(cs.minutes, 0xff, sizeof(cs.minutes));
+    }
+    else {
+        bitarray_set(cs.minutes, minute);
+    }
+    if (hour == 0xff) {
+        memset(cs.hours, 0xff, sizeof(cs.hours));
+    }
+    else {
+        bitarray_set(cs.hours, hour);
+    }
+    return cs;
+}
+
+void CronSpec::set(TimeOfDay tod) {
+    bitarray_set(hours, tod.hour);
+    bitarray_set(minutes, tod.minute);
+    bitarray_set(seconds, tod.second);
+}
+
+bool CronSpec::valid() {
+    return bitarray_any(seconds) && bitarray_any(minutes) && bitarray_any(hours);
+}
+
+// NOTE: This could be so much better.
+uint32_t CronSpec::getNextTime(DateTime after) {
+    auto unix = after.unix();
+    for (auto i = 0; i < 3600 * 24; ++i) {
+        CronSpec cs{ unix + i };
+        if (matches(cs)) {
+            return unix + i;
+        }
+    }
+    return 0;
 }
 
 void CronTask::run() {
