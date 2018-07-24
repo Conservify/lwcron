@@ -13,7 +13,7 @@ protected:
 };
 
 TEST_F(SchedulerSuite, DateTime) {
-    ASSERT_EQ(JacobsBirth.unix(), 388395000);
+    ASSERT_EQ(JacobsBirth.unix_time(), 388395000);
     ASSERT_EQ(DateTime{ 388395000 }, JacobsBirth);
 }
 
@@ -33,16 +33,16 @@ TEST_F(SchedulerSuite, Interval10s) {
     scheduler.begin(JacobsBirth);
 
     auto n1 = scheduler.nextTask(JacobsBirth);
-    ASSERT_EQ(n1.time, JacobsBirth.unix());
+    ASSERT_EQ(n1.time, JacobsBirth.unix_time());
 
     auto n2 = scheduler.nextTask(JacobsBirth + 1);
-    ASSERT_EQ(n2.time, JacobsBirth.unix() + 10);
+    ASSERT_EQ(n2.time, JacobsBirth.unix_time() + 10);
 
     auto n3 = scheduler.nextTask(JacobsBirth + 5);
-    ASSERT_EQ(n3.time, JacobsBirth.unix() + 10);
+    ASSERT_EQ(n3.time, JacobsBirth.unix_time() + 10);
 
     auto n4 = scheduler.nextTask(JacobsBirth + 15);
-    ASSERT_EQ(n4.time, JacobsBirth.unix() + 20);
+    ASSERT_EQ(n4.time, JacobsBirth.unix_time() + 20);
 }
 
 TEST_F(SchedulerSuite, Interval60s) {
@@ -53,13 +53,13 @@ TEST_F(SchedulerSuite, Interval60s) {
     scheduler.begin(JacobsBirth);
 
     auto n1 = scheduler.nextTask(JacobsBirth + 1);
-    ASSERT_EQ(n1.time, JacobsBirth.unix() + 60);
+    ASSERT_EQ(n1.time, JacobsBirth.unix_time() + 60);
 
     auto n2 = scheduler.nextTask(JacobsBirth + 30);
-    ASSERT_EQ(n2.time, JacobsBirth.unix() + 60);
+    ASSERT_EQ(n2.time, JacobsBirth.unix_time() + 60);
 
     auto n3 = scheduler.nextTask(JacobsBirth + 90);
-    ASSERT_EQ(n3.time, JacobsBirth.unix() + 120);
+    ASSERT_EQ(n3.time, JacobsBirth.unix_time() + 120);
 }
 
 TEST_F(SchedulerSuite, Interval10m) {
@@ -70,10 +70,10 @@ TEST_F(SchedulerSuite, Interval10m) {
     scheduler.begin(JacobsBirth);
 
     auto n1 = scheduler.nextTask(JacobsBirth);
-    ASSERT_EQ(n1.time, JacobsBirth.unix());
+    ASSERT_EQ(n1.time, JacobsBirth.unix_time());
 
     auto n2 = scheduler.nextTask(JacobsBirth + 30);
-    ASSERT_EQ(n2.time, JacobsBirth.unix() + (60 * 10));
+    ASSERT_EQ(n2.time, JacobsBirth.unix_time() + (60 * 10));
 }
 
 TEST_F(SchedulerSuite, MultipleIntervals) {
@@ -85,23 +85,23 @@ TEST_F(SchedulerSuite, MultipleIntervals) {
     scheduler.begin(JacobsBirth);
 
     auto n1 = scheduler.nextTask(JacobsBirth);
-    ASSERT_EQ(n1.time, JacobsBirth.unix());
+    ASSERT_EQ(n1.time, JacobsBirth.unix_time());
     ASSERT_EQ(n1.task, &task1);
 
     auto n2 = scheduler.nextTask(JacobsBirth + 5);
-    ASSERT_EQ(n2.time, JacobsBirth.unix() + 60 * 2);
+    ASSERT_EQ(n2.time, JacobsBirth.unix_time() + 60 * 2);
     ASSERT_EQ(n2.task, &task1);
 
     auto n3 = scheduler.nextTask(JacobsBirth + 60 * 3);
-    ASSERT_EQ(n3.time, JacobsBirth.unix() + 60 * 4);
+    ASSERT_EQ(n3.time, JacobsBirth.unix_time() + 60 * 4);
     ASSERT_EQ(n3.task, &task1);
 
     auto n4 = scheduler.nextTask(JacobsBirth + 60 * 4);
-    ASSERT_EQ(n4.time, JacobsBirth.unix() + 60 * 4);
+    ASSERT_EQ(n4.time, JacobsBirth.unix_time() + 60 * 4);
     ASSERT_EQ(n4.task, &task1);
 
     auto n5 = scheduler.nextTask(JacobsBirth + 60 * 4 + 5);
-    ASSERT_EQ(n5.time, JacobsBirth.unix() + 60 * 5);
+    ASSERT_EQ(n5.time, JacobsBirth.unix_time() + 60 * 5);
     ASSERT_EQ(n5.task, &task2);
 }
 
@@ -117,14 +117,14 @@ TEST_F(SchedulerSuite, RunningTasksMultipleIntervals) {
     ASSERT_FALSE(scheduler.check(now + 5));
     auto n1 = scheduler.nextTask();
     ASSERT_EQ(n1.task, &task1);
-    ASSERT_EQ(n1.time, now.unix() + 60 * 2);
+    ASSERT_EQ(n1.time, now.unix_time() + 60 * 2);
 
     auto to2 = scheduler.check(now + 60 * 2);
     ASSERT_EQ(to2.task, &task1);
     ASSERT_FALSE(scheduler.check(now + 60 * 2));
     auto n2 = scheduler.nextTask();
     ASSERT_EQ(n2.task, &task1);
-    ASSERT_EQ(n2.time, now.unix() + 60 * 4);
+    ASSERT_EQ(n2.time, now.unix_time() + 60 * 4);
 
     auto to3 = scheduler.check(now + 60 * 4);
     ASSERT_EQ(to3.task, &task1);
@@ -145,7 +145,7 @@ TEST_F(SchedulerSuite, RunningTasksMultipleIntervalsDoesntMissTask1) {
     ASSERT_FALSE(scheduler.check(now + 5));
     auto n1 = scheduler.nextTask();
     ASSERT_EQ(n1.task, &task1);
-    ASSERT_EQ(n1.time, now.unix() + 60 * 2);
+    ASSERT_EQ(n1.time, now.unix_time() + 60 * 2);
 
     auto o1 = scheduler.check(now + 60 * 2);
     ASSERT_EQ(o1.task, &task1);
@@ -166,14 +166,14 @@ TEST_F(SchedulerSuite, RunningTasksMultipleIntervalsDoesntMissTask2) {
     ASSERT_FALSE(scheduler.check(now + 5));
     auto n1 = scheduler.nextTask();
     ASSERT_EQ(n1.task, &task1);
-    ASSERT_EQ(n1.time, now.unix() + 60 * 2);
+    ASSERT_EQ(n1.time, now.unix_time() + 60 * 2);
 
     auto o1 = scheduler.check(now + 60 * 2);
     ASSERT_EQ(o1.task, &task1);
 
     auto n2 = scheduler.nextTask();
     ASSERT_EQ(n2.task, &task2);
-    ASSERT_EQ(n2.time, now.unix() + 60 * 2);
+    ASSERT_EQ(n2.time, now.unix_time() + 60 * 2);
 
     auto o2 = scheduler.check(now + 60 * 3);
     ASSERT_EQ(o2.task, &task2);
@@ -192,8 +192,8 @@ TEST_F(SchedulerSuite, CronSpec) {
     ASSERT_TRUE(bitarray_test(halfHourMark.seconds, 0));
     ASSERT_TRUE(bitarray_test(halfHourMark.minutes, 30));
 
-    ASSERT_EQ(halfHourMark.getNextTime(now + 0), now.unix());
-    ASSERT_EQ(halfHourMark.getNextTime(now + 1), now.unix() + 60 * 60);
+    ASSERT_EQ(halfHourMark.getNextTime(now + 0), now.unix_time());
+    ASSERT_EQ(halfHourMark.getNextTime(now + 1), now.unix_time() + 60 * 60);
 
     CronSpec sixFifteenAm = CronSpec::specific(0, 15, 6);
     ASSERT_TRUE(bitarray_test(sixFifteenAm.seconds, 0));
@@ -201,7 +201,7 @@ TEST_F(SchedulerSuite, CronSpec) {
     ASSERT_TRUE(bitarray_test(sixFifteenAm.hours, 6));
 
     DateTime time1(1982, 4, 24, 6, 15, 0);
-    ASSERT_EQ(sixFifteenAm.getNextTime(now + 0), time1.unix());
+    ASSERT_EQ(sixFifteenAm.getNextTime(now + 0), time1.unix_time());
 }
 
 TEST_F(SchedulerSuite, RunningTasksMultipleCrons) {
@@ -217,14 +217,14 @@ TEST_F(SchedulerSuite, RunningTasksMultipleCrons) {
     auto n1 = scheduler.nextTask();
     ASSERT_EQ(n1.task, &task2);
     DateTime time1(1982, 4, 23, 12, 0, 30);
-    ASSERT_EQ(n1.time, time1.unix());
+    ASSERT_EQ(n1.time, time1.unix_time());
 
     auto o1 = scheduler.check(time1);
     ASSERT_EQ(o1.task, &task2);
     auto n2 = scheduler.nextTask();
     ASSERT_EQ(n2.task, &task1);
     DateTime time2(1982, 4, 24, 6, 20, 0);
-    ASSERT_EQ(n2.time, time2.unix());
+    ASSERT_EQ(n2.time, time2.unix_time());
 }
 
 TEST_F(SchedulerSuite, RunningTasksMultipleCronsRecurringRuns) {
@@ -240,7 +240,7 @@ TEST_F(SchedulerSuite, RunningTasksMultipleCronsRecurringRuns) {
     auto n1 = scheduler.nextTask();
     ASSERT_EQ(n1.task, &task2);
     DateTime time1(1982, 4, 23, 12, 0, 30);
-    ASSERT_EQ(n1.time, time1.unix());
+    ASSERT_EQ(n1.time, time1.unix_time());
 
     auto o1 = scheduler.check(time1);
     ASSERT_EQ(o1.task, &task2);
@@ -248,7 +248,7 @@ TEST_F(SchedulerSuite, RunningTasksMultipleCronsRecurringRuns) {
     auto n2 = scheduler.nextTask();
     ASSERT_EQ(n2.task, &task1);
     DateTime time2(1982, 4, 24, 6, 20, 0);
-    ASSERT_EQ(n2.time, time2.unix());
+    ASSERT_EQ(n2.time, time2.unix_time());
 }
 
 TEST_F(SchedulerSuite, CronSpecIntervals) {

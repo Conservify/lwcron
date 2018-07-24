@@ -18,8 +18,8 @@ DateTime::DateTime(uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uint
     year_(year), month_(month - 1), day_(day), hour_(hour), minute_(minute), second_(second) {
 }
 
-DateTime::DateTime(uint32_t unix) {
-    auto t = unix;
+DateTime::DateTime(uint32_t unix_time) {
+    auto t = unix_time;
 
     TimeOfDay tod{ t };
     second_ = tod.second;
@@ -62,7 +62,7 @@ DateTime::DateTime(uint32_t unix) {
     day_ = t + 1;
 }
 
-uint32_t DateTime::unix() {
+uint32_t DateTime::unix_time() {
     auto year = year_;
     auto seconds = (year - 1970) * SecondsPerYear;
     for (auto i = 1970; i < year; i++) {
@@ -94,7 +94,7 @@ bool PeriodicTask::valid() {
 }
 
 uint32_t PeriodicTask::getNextTime(DateTime after) {
-    auto seconds = after.unix();
+    auto seconds = after.unix_time();
     auto r = seconds % interval_;
     if (r == 0) {
         return seconds;
@@ -143,11 +143,11 @@ bool CronSpec::valid() {
 
 // NOTE: This could be so much better.
 uint32_t CronSpec::getNextTime(DateTime after) {
-    auto unix = after.unix();
+    auto unix_time = after.unix_time();
     for (auto i = 0; i < 3600 * 24; ++i) {
-        CronSpec cs{ unix + i };
+        CronSpec cs{ unix_time + i };
         if (matches(cs)) {
-            return unix + i;
+            return unix_time + i;
         }
     }
     return 0;
@@ -174,7 +174,7 @@ void Scheduler::begin(DateTime now) {
 }
 
 Scheduler::TaskAndTime Scheduler::check(DateTime now) {
-    auto now_unix = now.unix();
+    auto now_unix = now.unix_time();
     for (auto i = (size_t)0; i < size_; i++) {
         auto task = tasks_[i];
         if (task->valid()) {

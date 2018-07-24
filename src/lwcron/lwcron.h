@@ -33,7 +33,7 @@ public:
     }
 
     DateTime(uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t second);
-    DateTime(uint32_t unix);
+    DateTime(uint32_t time);
 
 public:
     uint16_t year() const {
@@ -56,24 +56,24 @@ public:
     }
 
 public:
-    uint32_t unix();
+    uint32_t unix_time();
 
 public:
     DateTime operator+(const uint32_t seconds) {
-        return DateTime(unix() + seconds);
+        return DateTime(unix_time() + seconds);
     }
 
     DateTime operator-(const uint32_t seconds) {
-        return DateTime(unix() - seconds);
+        return DateTime(unix_time() - seconds);
     }
 
     DateTime& operator+=(const uint32_t rhs){
-        *this = DateTime(unix() + rhs);
+        *this = DateTime(unix_time() + rhs);
         return *this;
     }
 
     DateTime& operator-=(const uint32_t rhs){
-        *this = DateTime(unix() - rhs);
+        *this = DateTime(unix_time() - rhs);
         return *this;
     }
 
