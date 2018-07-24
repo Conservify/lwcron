@@ -106,8 +106,97 @@ public:
 
 };
 
+static inline bool bitarray_test(uint8_t *p, uint32_t n) {
+    return p[n / 8] & (0x1 << (n % 8));
+}
+
+static inline void bitarray_set(uint8_t *p, uint32_t n) {
+    p[n / 8] |= (0x1 << (n % 8));
+}
+
+static inline void bitarray_clear(uint8_t *p, uint32_t n) {
+    p[n / 8] &= ~(0x1 << (n % 8));
+}
+
+struct CronSpec {
+public:
+    uint8_t seconds[8] = { 0 };
+    uint8_t minutes[8] = { 0 };
+    uint8_t hours[3] = { 0 };
+
+public:
+    CronSpec() {
+    }
+
+    CronSpec(DateTime when) {
+        bitarray_set(seconds, when.second());
+        bitarray_set(minutes, when.minute());
+        bitarray_set(hours, when.hour());
+    }
+
+public:
+    static CronSpec specific(uint8_t second, uint8_t minute = 0xff, uint8_t hour = 0xff) {
+        CronSpec cs;
+        bitarray_set(cs.seconds, second);
+        if (minute == 0xff) {
+            memset(cs.minutes, 0xff, sizeof(cs.minutes));
+        }
+        else {
+            bitarray_set(cs.minutes, minute);
+        }
+        if (hour == 0xff) {
+            memset(cs.hours, 0xff, sizeof(cs.hours));
+        }
+        else {
+            bitarray_set(cs.hours, hour);
+        }
+        return cs;
+    }
+
+    bool valid() {
+        return true;
+    }
+
+    // NOTE: This could be so much better.
+    uint32_t getNextTime(DateTime after) {
+        auto unix = after.unix();
+        for (auto i = 0; i < 3600 * 24; ++i) {
+            CronSpec cs{ unix + i };
+            if (matches(cs)) {
+                return unix + i;
+            }
+        }
+        return 0;
+    }
+
+private:
+    bool matches(CronSpec cs) {
+        return matches(hours, cs.hours, sizeof(hours)) &&
+            matches(minutes, cs.minutes, sizeof(minutes)) &&
+            matches(seconds, cs.seconds, sizeof(seconds));
+    }
+
+    static bool matches(uint8_t *a, uint8_t *b, size_t size) {
+        for (auto i = (size_t)0; i < size; ++i) {
+            if ((a[i] & b[i]) > 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+};
+
 class Cron : public Task {
 private:
+    CronSpec spec_;
+
+public:
+    Cron() {
+    }
+
+    Cron(CronSpec spec) : spec_(spec) {
+    }
+
 public:
     void run() override;
     bool valid() override;

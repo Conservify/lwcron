@@ -60,23 +60,28 @@ DateTime::DateTime(uint32_t unix) {
 }
 
 uint32_t DateTime::unix() {
+    constexpr uint32_t SecondsPerYear = (60 * 60 * 24L * 365);
+    constexpr uint32_t SecondsPerDay = 60 * 60 * 24L;
+    constexpr uint32_t SecondsPerHour = 3600L;
+
     auto year = year_;
-    auto seconds = (year - 1970) * (60 * 60 * 24L * 365);
+    auto seconds = (year - 1970) * SecondsPerYear;
     for (auto i = 1970; i < year; i++) {
         if (is_leap_year(i)) {
-            seconds += 60 * 60 * 24L;
+            seconds += SecondsPerDay;
         }
     }
     for (auto i = 0; i < month_; i++) {
-        if (i == 1 && is_leap_year(year)) { 
-            seconds += 60 * 60 * 24L * 29;
-        } else {
-            seconds += 60 * 60 * 24L * DaysInMonth[i];
+        if (i == 1 && is_leap_year(year)) {
+            seconds += SecondsPerDay * 29;
+        }
+        else {
+            seconds += SecondsPerDay * DaysInMonth[i];
         }
     }
 
-    seconds += (day_ - 1) * 3600 * 24L;
-    seconds += hour_ * 3600L;
+    seconds += (day_ - 1) * SecondsPerDay;
+    seconds += hour_ * SecondsPerHour;
     seconds += minute_ * 60L;
     seconds += second_;
     return seconds;
@@ -102,11 +107,11 @@ void Cron::run() {
 }
 
 bool Cron::valid() {
-    return false;
+    return spec_.valid();
 }
 
 uint32_t Cron::getNextTime(DateTime after) {
-    return 0;
+    return spec_.getNextTime(after);
 }
 
 void Scheduler::begin(DateTime now) {

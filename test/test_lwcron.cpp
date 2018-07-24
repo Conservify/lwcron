@@ -7,17 +7,17 @@ using namespace lwcron;
 
 static DateTime JacobsBirth{ 1982, 4, 23, 7, 30, 00 };
 
-class CronSuite : public ::testing::Test {
+class SchedulerSuite : public ::testing::Test {
 protected:
 
 };
 
-TEST_F(CronSuite, DateTime) {
+TEST_F(SchedulerSuite, DateTime) {
     ASSERT_EQ(JacobsBirth.unix(), 388395000);
     ASSERT_EQ(DateTime{ 388395000 }, JacobsBirth);
 }
 
-TEST_F(CronSuite, Empty) {
+TEST_F(SchedulerSuite, Empty) {
     Scheduler scheduler;
 
     scheduler.begin(JacobsBirth);
@@ -25,7 +25,7 @@ TEST_F(CronSuite, Empty) {
     ASSERT_FALSE(scheduler.nextTask(JacobsBirth));
 }
 
-TEST_F(CronSuite, Interval10s) {
+TEST_F(SchedulerSuite, Interval10s) {
     Periodic task{ 10 };
     Task *tasks[1] = { &task };
     Scheduler scheduler{ tasks };
@@ -45,7 +45,7 @@ TEST_F(CronSuite, Interval10s) {
     ASSERT_EQ(n4.time, JacobsBirth.unix() + 20);
 }
 
-TEST_F(CronSuite, Interval60s) {
+TEST_F(SchedulerSuite, Interval60s) {
     Periodic task{ 60 };
     Task *tasks[1] = { &task };
     Scheduler scheduler{ tasks };
@@ -62,7 +62,7 @@ TEST_F(CronSuite, Interval60s) {
     ASSERT_EQ(n3.time, JacobsBirth.unix() + 120);
 }
 
-TEST_F(CronSuite, Interval10m) {
+TEST_F(SchedulerSuite, Interval10m) {
     Periodic task{ 60 * 10 };
     Task *tasks[1] = { &task };
     Scheduler scheduler{ tasks };
@@ -76,7 +76,7 @@ TEST_F(CronSuite, Interval10m) {
     ASSERT_EQ(n2.time, JacobsBirth.unix() + (60 * 10));
 }
 
-TEST_F(CronSuite, MultipleIntervals) {
+TEST_F(SchedulerSuite, MultipleIntervals) {
     Periodic task1{ 60 * 2 };
     Periodic task2{ 60 * 5 };
     Task *tasks[2] = { &task1, &task2 };
@@ -105,7 +105,7 @@ TEST_F(CronSuite, MultipleIntervals) {
     ASSERT_EQ(n5.task, &task2);
 }
 
-TEST_F(CronSuite, RunningTasksMultipleIntervals) {
+TEST_F(SchedulerSuite, RunningTasksMultipleIntervals) {
     Periodic task1{ 60 * 2 };
     Periodic task2{ 60 * 5 };
     Task *tasks[2] = { &task1, &task2 };
@@ -133,7 +133,7 @@ TEST_F(CronSuite, RunningTasksMultipleIntervals) {
     ASSERT_EQ(n3.task, &task2);
 }
 
-TEST_F(CronSuite, RunningTasksMultipleIntervalsDoesntMissTask1) {
+TEST_F(SchedulerSuite, RunningTasksMultipleIntervalsDoesntMissTask1) {
     Periodic task1{ 60 * 2 };
     Periodic task2{ 60 * 2 };
     Task *tasks[2] = { &task1, &task2 };
@@ -154,7 +154,7 @@ TEST_F(CronSuite, RunningTasksMultipleIntervalsDoesntMissTask1) {
     ASSERT_FALSE(scheduler.check(now + 60 * 2));
 }
 
-TEST_F(CronSuite, RunningTasksMultipleIntervalsDoesntMissTask2) {
+TEST_F(SchedulerSuite, RunningTasksMultipleIntervalsDoesntMissTask2) {
     Periodic task1{ 60 * 2 };
     Periodic task2{ 60 * 2 };
     Task *tasks[2] = { &task1, &task2 };
@@ -178,4 +178,51 @@ TEST_F(CronSuite, RunningTasksMultipleIntervalsDoesntMissTask2) {
     auto o2 = scheduler.check(now + 60 * 3);
     ASSERT_EQ(o2.task, &task2);
     ASSERT_FALSE(scheduler.check(now + 60 * 3));
+}
+
+TEST_F(SchedulerSuite, CronSpec) {
+    DateTime now = JacobsBirth;
+    CronSpec spec{ now };
+
+    ASSERT_TRUE(bitarray_test(spec.seconds, 0));
+    ASSERT_TRUE(bitarray_test(spec.minutes, 30));
+    ASSERT_TRUE(bitarray_test(spec.hours, 7));
+
+    CronSpec halfHourMark = CronSpec::specific(0, 30);
+    ASSERT_TRUE(bitarray_test(halfHourMark.seconds, 0));
+    ASSERT_TRUE(bitarray_test(halfHourMark.minutes, 30));
+
+    ASSERT_EQ(halfHourMark.getNextTime(now + 0), now.unix());
+    ASSERT_EQ(halfHourMark.getNextTime(now + 1), now.unix() + 60 * 60);
+
+    CronSpec sixFifteenAm = CronSpec::specific(0, 15, 6);
+    ASSERT_TRUE(bitarray_test(sixFifteenAm.seconds, 0));
+    ASSERT_TRUE(bitarray_test(sixFifteenAm.minutes, 15));
+    ASSERT_TRUE(bitarray_test(sixFifteenAm.hours, 6));
+
+    DateTime time1(1982, 4, 24, 6, 15, 0);
+    ASSERT_EQ(sixFifteenAm.getNextTime(now + 0), time1.unix());
+}
+
+TEST_F(SchedulerSuite, RunningTasksMultipleCrons) {
+    Cron task1{ CronSpec::specific( 0, 20,  6) }; //  6:20AM
+    Cron task2{ CronSpec::specific(30,  0, 12) }; // 12:00PM
+    Task *tasks[2] = { &task1, &task2 };
+    Scheduler scheduler{ tasks };
+
+    auto now = JacobsBirth;
+    scheduler.begin(now + 5);
+
+    ASSERT_FALSE(scheduler.check(now + 5));
+    auto n1 = scheduler.nextTask();
+    ASSERT_EQ(n1.task, &task2);
+    DateTime time1(1982, 4, 23, 12, 0, 30);
+    ASSERT_EQ(n1.time, time1.unix());
+
+    auto o1 = scheduler.check(time1);
+    ASSERT_EQ(o1.task, &task2);
+    auto n2 = scheduler.nextTask();
+    ASSERT_EQ(n2.task, &task1);
+    DateTime time2(1982, 4, 24, 6, 20, 0);
+    ASSERT_EQ(n2.time, time2.unix());
 }
