@@ -42,7 +42,7 @@ set_target_properties(libgmock PROPERTIES
 include_directories("${source_dir}/googletest/include"
                     "${source_dir}/googlemock/include")
 
-file(GLOB SRCS *.cpp ../src/lwstreams/*)
+file(GLOB SRCS *.cpp ../src/lwcron/*)
 
 add_executable(testcommon ${SRCS})
 

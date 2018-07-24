@@ -4,6 +4,6 @@ set(LIBRARIES SPI)
 
 include_directories(../../src)
 
-arduino(lwstreams-example-simple "${SOURCE_FILES}" "${LIBRARIES}")
+arduino(lwcron-example-simple "${SOURCE_FILES}" "${LIBRARIES}")
 
-target_compile_options(lwstreams-example-simple PRIVATE -Wall -Werror)
+target_compile_options(lwcron-example-simple PRIVATE -Wall -Werror)
