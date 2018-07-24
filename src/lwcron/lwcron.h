@@ -60,14 +60,14 @@ public:
         return *this;
     }
 
-    bool operator !=(const DateTime &b) const {
-        return !(*this == b);
-    }
-
     bool operator ==(const DateTime &b) const {
         return year_ == b.year_ && month_ == b.month_ &&
                day_ == b.day_ && hour_ == b.hour_ &&
                minute_ == b.minute_ && second_ == b.second_;
+    }
+
+    bool operator !=(const DateTime &b) const {
+        return !(*this == b);
     }
 
 };
@@ -88,15 +88,15 @@ public:
 
 };
 
-class Periodic : public Task {
+class PeriodicTask : public Task {
 private:
     uint32_t interval_{ 0 };
 
 public:
-    Periodic() {
+    PeriodicTask() {
     }
 
-    Periodic(uint32_t interval) : interval_(interval) {
+    PeriodicTask(uint32_t interval) : interval_(interval) {
     }
 
 public:
@@ -186,15 +186,15 @@ private:
     }
 };
 
-class Cron : public Task {
+class CronTask : public Task {
 private:
     CronSpec spec_;
 
 public:
-    Cron() {
+    CronTask() {
     }
 
-    Cron(CronSpec spec) : spec_(spec) {
+    CronTask(CronSpec spec) : spec_(spec) {
     }
 
 public:

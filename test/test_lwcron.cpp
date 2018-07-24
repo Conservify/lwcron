@@ -26,7 +26,7 @@ TEST_F(SchedulerSuite, Empty) {
 }
 
 TEST_F(SchedulerSuite, Interval10s) {
-    Periodic task{ 10 };
+    PeriodicTask task{ 10 };
     Task *tasks[1] = { &task };
     Scheduler scheduler{ tasks };
 
@@ -46,7 +46,7 @@ TEST_F(SchedulerSuite, Interval10s) {
 }
 
 TEST_F(SchedulerSuite, Interval60s) {
-    Periodic task{ 60 };
+    PeriodicTask task{ 60 };
     Task *tasks[1] = { &task };
     Scheduler scheduler{ tasks };
 
@@ -63,7 +63,7 @@ TEST_F(SchedulerSuite, Interval60s) {
 }
 
 TEST_F(SchedulerSuite, Interval10m) {
-    Periodic task{ 60 * 10 };
+    PeriodicTask task{ 60 * 10 };
     Task *tasks[1] = { &task };
     Scheduler scheduler{ tasks };
 
@@ -77,8 +77,8 @@ TEST_F(SchedulerSuite, Interval10m) {
 }
 
 TEST_F(SchedulerSuite, MultipleIntervals) {
-    Periodic task1{ 60 * 2 };
-    Periodic task2{ 60 * 5 };
+    PeriodicTask task1{ 60 * 2 };
+    PeriodicTask task2{ 60 * 5 };
     Task *tasks[2] = { &task1, &task2 };
     Scheduler scheduler{ tasks };
 
@@ -106,8 +106,8 @@ TEST_F(SchedulerSuite, MultipleIntervals) {
 }
 
 TEST_F(SchedulerSuite, RunningTasksMultipleIntervals) {
-    Periodic task1{ 60 * 2 };
-    Periodic task2{ 60 * 5 };
+    PeriodicTask task1{ 60 * 2 };
+    PeriodicTask task2{ 60 * 5 };
     Task *tasks[2] = { &task1, &task2 };
     Scheduler scheduler{ tasks };
 
@@ -134,8 +134,8 @@ TEST_F(SchedulerSuite, RunningTasksMultipleIntervals) {
 }
 
 TEST_F(SchedulerSuite, RunningTasksMultipleIntervalsDoesntMissTask1) {
-    Periodic task1{ 60 * 2 };
-    Periodic task2{ 60 * 2 };
+    PeriodicTask task1{ 60 * 2 };
+    PeriodicTask task2{ 60 * 2 };
     Task *tasks[2] = { &task1, &task2 };
     Scheduler scheduler{ tasks };
 
@@ -155,8 +155,8 @@ TEST_F(SchedulerSuite, RunningTasksMultipleIntervalsDoesntMissTask1) {
 }
 
 TEST_F(SchedulerSuite, RunningTasksMultipleIntervalsDoesntMissTask2) {
-    Periodic task1{ 60 * 2 };
-    Periodic task2{ 60 * 2 };
+    PeriodicTask task1{ 60 * 2 };
+    PeriodicTask task2{ 60 * 2 };
     Task *tasks[2] = { &task1, &task2 };
     Scheduler scheduler{ tasks };
 
@@ -205,8 +205,8 @@ TEST_F(SchedulerSuite, CronSpec) {
 }
 
 TEST_F(SchedulerSuite, RunningTasksMultipleCrons) {
-    Cron task1{ CronSpec::specific( 0, 20,  6) }; //  6:20AM
-    Cron task2{ CronSpec::specific(30,  0, 12) }; // 12:00PM
+    CronTask task1{ CronSpec::specific( 0, 20,  6) }; //  6:20AM
+    CronTask task2{ CronSpec::specific(30,  0, 12) }; // 12:00PM
     Task *tasks[2] = { &task1, &task2 };
     Scheduler scheduler{ tasks };
 

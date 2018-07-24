@@ -87,14 +87,14 @@ uint32_t DateTime::unix() {
     return seconds;
 }
 
-void Periodic::run() {
+void PeriodicTask::run() {
 }
 
-bool Periodic::valid() {
+bool PeriodicTask::valid() {
     return interval_ > 0;
 }
 
-uint32_t Periodic::getNextTime(DateTime after) {
+uint32_t PeriodicTask::getNextTime(DateTime after) {
     auto seconds = after.unix();
     auto r = seconds % interval_;
     if (r == 0) {
@@ -103,14 +103,14 @@ uint32_t Periodic::getNextTime(DateTime after) {
     return seconds + (interval_ - r);
 }
 
-void Cron::run() {
+void CronTask::run() {
 }
 
-bool Cron::valid() {
+bool CronTask::valid() {
     return spec_.valid();
 }
 
-uint32_t Cron::getNextTime(DateTime after) {
+uint32_t CronTask::getNextTime(DateTime after) {
     return spec_.getNextTime(after);
 }
 
