@@ -1,7 +1,5 @@
 #include "lwcron.h"
 
-#include <iostream>
-
 namespace lwcron {
 
 constexpr uint32_t SecondsPerYear = (60 * 60 * 24L * 365);
