@@ -105,6 +105,45 @@ TEST_F(SchedulerSuite, MultipleIntervals) {
     ASSERT_EQ(n5.task, &task2);
 }
 
+class ExampleTask : public PeriodicTask {
+private:
+    bool ran_{ false };
+
+public:
+    ExampleTask(uint32_t interval) : PeriodicTask(interval) {
+    }
+
+public:
+    bool ran() {
+        return ran_;
+    };
+
+public:
+    void run() override {
+        ran_ = true;
+    }
+};
+
+TEST_F(SchedulerSuite, CheckRunsTasks) {
+    ExampleTask task1{ 60 * 2 };
+    Task *tasks[1] = { &task1 };
+    Scheduler scheduler{ tasks };
+
+    auto now = JacobsBirth;
+    scheduler.begin(now + 5);
+
+    auto n1 = scheduler.nextTask(JacobsBirth);
+    ASSERT_EQ(n1.time, JacobsBirth.unix_time());
+    ASSERT_EQ(n1.task, &task1);
+
+    ASSERT_FALSE(scheduler.check(now + 5));
+
+    ASSERT_FALSE(task1.ran());
+    auto to2 = scheduler.check(now + 60 * 2);
+    ASSERT_EQ(to2.task, &task1);
+    ASSERT_TRUE(task1.ran());
+}
+
 TEST_F(SchedulerSuite, RunningTasksMultipleIntervals) {
     PeriodicTask task1{ 60 * 2 };
     PeriodicTask task2{ 60 * 5 };

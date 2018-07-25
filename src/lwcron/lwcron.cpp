@@ -179,6 +179,7 @@ Scheduler::TaskAndTime Scheduler::check(DateTime now) {
             if (task->scheduled_ <= now_unix) {
                 auto scheduled = task->scheduled_;
                 task->scheduled_ = task->getNextTime(now + 1);
+                task->run();
                 return TaskAndTime { scheduled, task };
             }
         }
