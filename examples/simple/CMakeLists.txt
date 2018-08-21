@@ -1,9 +1,13 @@
-file(GLOB SOURCE_FILES *.cpp ../../src/*.cpp)
+include(Arduino)
 
-set(LIBRARIES SPI)
+enable_arduino_toolchain()
+
+file(GLOB sources *.cpp ../../src/*.cpp)
 
 include_directories(../../src)
 
-arduino(lwcron-example-simple "${SOURCE_FILES}" "${LIBRARIES}")
+add_arduino_library(lwcron-example-simple "${sources}")
 
 target_compile_options(lwcron-example-simple PRIVATE -Wall -Werror)
+
+add_arduino_firmware(lwcron-example-simple)
