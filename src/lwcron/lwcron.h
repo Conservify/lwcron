@@ -90,6 +90,15 @@ public:
 };
 
 class Scheduler;
+class PeriodicTask;
+class CronTask;
+
+class TaskVisitor {
+public:
+    virtual void visit(PeriodicTask &task);
+    virtual void visit(CronTask &task);
+
+};
 
 class Task {
 private:
@@ -100,10 +109,12 @@ public:
     virtual void run() = 0;
     virtual bool valid() = 0;
     virtual uint32_t getNextTime(DateTime after) = 0;
+    virtual void accept(TaskVisitor &visitor) = 0;
     virtual const char *toString() const {
         return "Task<>";
     }
 
+public:
     friend class Scheduler;
 
 };
@@ -120,9 +131,17 @@ public:
     }
 
 public:
+    uint32_t interval() const {
+        return interval_;
+    }
+
+public:
     void run() override;
     bool valid() override;
     uint32_t getNextTime(DateTime after) override;
+    void accept(TaskVisitor &visitor) override {
+        visitor.visit(*this);
+    }
 
 };
 
@@ -218,9 +237,17 @@ public:
     }
 
 public:
+    CronSpec spec() const {
+        return spec_;
+    }
+
+public:
     void run() override;
     bool valid() override;
     uint32_t getNextTime(DateTime after) override;
+    void accept(TaskVisitor &visitor) override {
+        visitor.visit(*this);
+    }
 
 };
 
@@ -235,6 +262,26 @@ public:
 
     template<size_t N>
     Scheduler(Task* (&tasks)[N]) : tasks_(&tasks[0]), size_(N) {
+    }
+
+public:
+    size_t size() const {
+        return size_;
+    }
+
+    Task *get(size_t i) const {
+        return tasks_[i];
+    }
+
+    Task *operator[] (size_t i) const {
+        return tasks_[i];
+    }
+
+public:
+    void accept(TaskVisitor &visitor) {
+        for (size_t i = 0; i < size_; ++i) {
+            tasks_[i]->accept(visitor);
+        }
     }
 
 public:
