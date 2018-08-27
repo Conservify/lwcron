@@ -100,6 +100,9 @@ public:
     virtual void run() = 0;
     virtual bool valid() = 0;
     virtual uint32_t getNextTime(DateTime after) = 0;
+    virtual const char *toString() const {
+        return "Task<>";
+    }
 
     friend class Scheduler;
 
