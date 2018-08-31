@@ -87,7 +87,7 @@ uint32_t DateTime::unix_time() {
 void PeriodicTask::run() {
 }
 
-bool PeriodicTask::valid() {
+bool PeriodicTask::valid() const {
     return interval_ > 0;
 }
 
@@ -135,7 +135,7 @@ void CronSpec::set(TimeOfDay tod) {
     bitarray_set(seconds, tod.second);
 }
 
-bool CronSpec::valid() {
+bool CronSpec::valid() const {
     return bitarray_any(seconds) && bitarray_any(minutes) && bitarray_any(hours);
 }
 
@@ -154,7 +154,7 @@ uint32_t CronSpec::getNextTime(DateTime after) {
 void CronTask::run() {
 }
 
-bool CronTask::valid() {
+bool CronTask::valid() const {
     return spec_.valid();
 }
 
