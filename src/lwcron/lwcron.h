@@ -295,7 +295,7 @@ public:
         TaskAndTime(uint32_t time, Task *task) : time(time), task(task) {
         }
 
-        operator bool() {
+        operator bool() const {
             return task != nullptr;
         }
     };

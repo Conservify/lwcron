@@ -312,3 +312,18 @@ TEST_F(SchedulerSuite, CronSpecIntervals) {
     ASSERT_EQ(bitarray_nset(everySixHours.hours), 4);
 }
 
+TEST_F(SchedulerSuite, InvestigateMissedTaskProblem) {
+    PeriodicTask task1{ 150 };
+    PeriodicTask task2{ 300 };
+    Task *tasks[2] = { &task1, &task2 };
+    Scheduler scheduler{ tasks };
+
+    auto now = JacobsBirth + 3;
+    scheduler.begin(now);
+
+    ASSERT_FALSE(scheduler.check(now));
+
+    ASSERT_FALSE(scheduler.check(now + 145));
+
+    ASSERT_TRUE(scheduler.check(now + 147));
+}
