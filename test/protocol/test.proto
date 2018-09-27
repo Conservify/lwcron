@@ -1,8 +1,0 @@
-syntax = "proto3";
-package lwstest;
-
-message Message {
-  uint64 time = 1;
-  string message = 2;
-  bytes data = 3;
-}
