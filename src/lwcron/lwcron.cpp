@@ -173,6 +173,15 @@ void Scheduler::begin(DateTime now) {
 
 Scheduler::TaskAndTime Scheduler::check(DateTime now) {
     auto now_unix = now.unix_time();
+    auto difference = (int64_t)now_unix - (int64_t)last_now_;
+
+    last_now_ = now_unix;
+
+    if (difference < 0) {
+        begin(now);
+        return { };
+    }
+
     for (auto i = (size_t)0; i < size_; i++) {
         auto task = tasks_[i];
         if (task->valid()) {

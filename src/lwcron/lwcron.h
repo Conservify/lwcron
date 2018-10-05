@@ -255,6 +255,7 @@ class Scheduler {
 private:
     Task **tasks_{ nullptr };
     size_t size_{ 0 };
+    uint32_t last_now_{ 0 };
 
 public:
     Scheduler() {

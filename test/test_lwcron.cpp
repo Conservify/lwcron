@@ -327,3 +327,32 @@ TEST_F(SchedulerSuite, InvestigateMissedTaskProblem) {
 
     ASSERT_TRUE(scheduler.check(now + 147));
 }
+
+TEST_F(SchedulerSuite, ClockMovingBackwardsResets) {
+    PeriodicTask task1{ 150 };
+    Task *tasks[1] = { &task1 };
+    Scheduler scheduler{ tasks };
+
+    auto now = JacobsBirth - 1;
+    scheduler.begin(now);
+
+    ASSERT_FALSE(scheduler.check(now));
+
+    now += 1;
+    ASSERT_TRUE(scheduler.check(now));
+
+    // Next time is 150s after "now"
+    auto n1 = scheduler.nextTask();
+    ASSERT_EQ(n1.time, now.unix_time() + 150);
+
+    // Go back two hours.
+    now -= 60 * 60 * 2 + 1;
+
+    ASSERT_FALSE(scheduler.check(now));
+
+    // New next time is 1s after the new now.
+    auto n2 = scheduler.nextTask();
+    ASSERT_EQ(n2.time, now.unix_time() + 1);
+
+    ASSERT_TRUE(scheduler.check(now + 1));
+}
