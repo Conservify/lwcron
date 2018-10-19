@@ -208,6 +208,8 @@ public:
 
     static CronSpec specific(uint8_t second, uint8_t minute = 0xff, uint8_t hour = 0xff);
 
+    static CronSpec everyFiveMinutes();
+
 private:
     bool matches(CronSpec cs) {
         return matches(hours, cs.hours, sizeof(hours)) &&

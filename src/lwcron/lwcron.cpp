@@ -129,6 +129,17 @@ CronSpec CronSpec::specific(uint8_t second, uint8_t minute, uint8_t hour) {
     return cs;
 }
 
+
+CronSpec CronSpec::everyFiveMinutes() {
+    CronSpec cs;
+    bitarray_set(cs.seconds, 0);
+    for (auto i = 0; i < 60; i += 5) {
+        bitarray_set(cs.minutes, i);
+    }
+    memset(cs.hours, 0xff, sizeof(cs.hours));
+    return cs;
+}
+
 void CronSpec::set(TimeOfDay tod) {
     bitarray_set(hours, tod.hour);
     bitarray_set(minutes, tod.minute);
