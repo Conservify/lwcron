@@ -210,6 +210,8 @@ public:
 
     static CronSpec everyFiveMinutes();
 
+    static CronSpec everyTwentyMinutes();
+
 private:
     bool matches(CronSpec cs) {
         return matches(hours, cs.hours, sizeof(hours)) &&
