@@ -6,13 +6,14 @@ $(BUILD):
 	mkdir -p $(BUILD)
 
 all: $(BUILD)
-	cd $(BUILD) && cmake ../ && make
+	cd $(BUILD) && cmake ../
+	$(MAKE) -C $(BUILD)
 
 test: all
-	cd $(BUILD) && env GTEST_COLOR=1 make testcommon test ARGS=-VV
+	env GTEST_COLOR=1 $(MAKE) -C $(BUILD) testcommon test ARGS=-VV
 
 doc: all
-	cd $(BUILD) && make doc
+	make -C $(BUILD) doc
 
 clean:
 	rm -rf $(BUILD)
@@ -20,4 +21,4 @@ clean:
 veryclean: clean
 	rm -rf gitdeps
 
-.PHONY:
+.PHONY: doc
