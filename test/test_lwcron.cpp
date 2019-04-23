@@ -306,6 +306,11 @@ TEST_F(SchedulerSuite, CronSpecIntervals) {
     ASSERT_EQ(bitarray_nset(everyHour.minutes), 1);
     ASSERT_EQ(bitarray_nset(everyHour.hours), 24);
 
+    auto everyTwoHours = CronSpec::interval(60 * 60 * 2);
+    ASSERT_EQ(bitarray_nset(everyTwoHours.seconds), 1);
+    ASSERT_EQ(bitarray_nset(everyTwoHours.minutes), 1);
+    ASSERT_EQ(bitarray_nset(everyTwoHours.hours), 12);
+
     auto everySixHours = CronSpec::interval(60 * 60 * 6);
     ASSERT_EQ(bitarray_nset(everySixHours.seconds), 1);
     ASSERT_EQ(bitarray_nset(everySixHours.minutes), 1);
