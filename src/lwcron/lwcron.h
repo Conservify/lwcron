@@ -40,7 +40,7 @@ public:
         return year_;
     }
     uint8_t month() const {
-        return month_;
+        return month_ + 1;
     }
     uint8_t day() const {
         return day_;
