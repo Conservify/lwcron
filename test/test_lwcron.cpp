@@ -243,6 +243,33 @@ TEST_F(SchedulerSuite, CronSpec) {
     ASSERT_EQ(sixFifteenAm.getNextTime(now + 0), time1.unix_time());
 }
 
+TEST_F(SchedulerSuite, RunningTaskOnceADay) {
+    CronTask task1{ CronSpec::interval(86400) };
+    Task *tasks[1] = { &task1 };
+    Scheduler scheduler{ tasks };
+
+    auto now = JacobsBirth;
+    scheduler.begin(now + 5);
+
+    ASSERT_FALSE(scheduler.check(now + 5));
+    auto n1 = scheduler.nextTask();
+    ASSERT_EQ(n1.task, &task1);
+    DateTime time1(1982, 4, 24, 0, 0, 0);
+    ASSERT_EQ(n1.time, time1.unix_time());
+
+    ASSERT_FALSE(scheduler.check(now + 10));
+    auto n2 = scheduler.nextTask();
+    ASSERT_EQ(n2.task, &task1);
+    DateTime time2(1982, 4, 24, 0, 0, 0);
+    ASSERT_EQ(n2.time, time2.unix_time());
+
+    ASSERT_TRUE(scheduler.check(now + (60 * 60 * 17)));
+    auto n3 = scheduler.nextTask();
+    ASSERT_EQ(n3.task, &task1);
+    DateTime time3(1982, 4, 25, 0, 0, 0);
+    ASSERT_EQ(n3.time, time3.unix_time());
+}
+
 TEST_F(SchedulerSuite, RunningTasksMultipleCrons) {
     CronTask task1{ CronSpec::specific( 0, 20,  6) }; //  6:20AM
     CronTask task2{ CronSpec::specific(30,  0, 12) }; // 12:00PM

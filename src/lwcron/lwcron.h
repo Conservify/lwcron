@@ -183,9 +183,9 @@ static inline void bitarray_clear(uint8_t (&p)[N], uint32_t n) {
 
 struct CronSpec {
 public:
-    uint8_t seconds[8] = { 0 };
-    uint8_t minutes[8] = { 0 };
-    uint8_t hours[3] = { 0 };
+    uint8_t seconds[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+    uint8_t minutes[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+    uint8_t hours[3] = { 0, 0, 0 };
 
 public:
     CronSpec() {
