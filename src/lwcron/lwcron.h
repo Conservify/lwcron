@@ -108,6 +108,7 @@ private:
 public:
     virtual void run() = 0;
     virtual bool valid() const = 0;
+    virtual bool enabled() const = 0;
     virtual uint32_t getNextTime(DateTime after) = 0;
     virtual void accept(TaskVisitor &visitor) = 0;
     virtual const char *toString() const {
@@ -138,6 +139,7 @@ public:
 public:
     void run() override;
     bool valid() const override;
+    bool enabled() const override;
     uint32_t getNextTime(DateTime after) override;
     void accept(TaskVisitor &visitor) override {
         visitor.visit(*this);
@@ -248,6 +250,7 @@ public:
 public:
     void run() override;
     bool valid() const override;
+    bool enabled() const override;
     uint32_t getNextTime(DateTime after) override;
     void accept(TaskVisitor &visitor) override {
         visitor.visit(*this);

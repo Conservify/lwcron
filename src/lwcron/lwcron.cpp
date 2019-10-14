@@ -92,6 +92,10 @@ bool PeriodicTask::valid() const {
     return interval_ > 0;
 }
 
+bool PeriodicTask::enabled() const {
+    return true;
+}
+
 uint32_t PeriodicTask::getNextTime(DateTime after) {
     auto seconds = after.unix_time();
     auto r = seconds % interval_;
@@ -161,6 +165,10 @@ bool CronSpec::valid() const {
     return bitarray_any(seconds) && bitarray_any(minutes) && bitarray_any(hours);
 }
 
+bool CronTask::enabled() const {
+    return true;
+}
+
 // NOTE: This could be so much better.
 uint32_t CronSpec::getNextTime(DateTime after) {
     auto unix_time = after.unix_time();
@@ -187,7 +195,7 @@ uint32_t CronTask::getNextTime(DateTime after) {
 void Scheduler::begin(DateTime now) {
     for (auto i = (size_t)0; i < size_; i++) {
         auto task = tasks_[i];
-        if (task->valid()) {
+        if (task->valid() && task->enabled()) {
             task->scheduled_ = task->getNextTime(now);
         }
     }
@@ -206,7 +214,7 @@ Scheduler::TaskAndTime Scheduler::check(DateTime now) {
 
     for (auto i = (size_t)0; i < size_; i++) {
         auto task = tasks_[i];
-        if (task->valid()) {
+        if (task->valid() && task->enabled()) {
             if (task->scheduled_ <= now_unix) {
                 auto scheduled = task->scheduled_;
                 task->scheduled_ = task->getNextTime(now + 1);
@@ -223,7 +231,7 @@ Scheduler::TaskAndTime Scheduler::nextTask(DateTime now) {
     TaskAndTime found;
     for (auto i = (size_t)0; i < size_; i++) {
         auto task = tasks_[i];
-        if (task->valid()) {
+        if (task->valid() && task->enabled()) {
             auto time = task->getNextTime(now);
             if (!found || found.time > time) {
                 found = TaskAndTime { time, task };
@@ -237,7 +245,7 @@ Scheduler::TaskAndTime Scheduler::nextTask() {
     TaskAndTime found;
     for (auto i = (size_t)0; i < size_; i++) {
         auto task = tasks_[i];
-        if (task->valid()) {
+        if (task->valid() && task->enabled()) {
             auto time = task->scheduled_;
             if (!found || found.time > time) {
                 found = TaskAndTime { time, task };
