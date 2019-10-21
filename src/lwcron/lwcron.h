@@ -214,6 +214,16 @@ public:
 
     static CronSpec everyTwentyMinutes();
 
+    inline bool operator==(CronSpec const &rhs) {
+        return memcmp(hours, rhs.hours, sizeof(hours)) == 0 &&
+               memcmp(minutes, rhs.minutes, sizeof(minutes)) == 0 &&
+               memcmp(seconds, rhs.seconds, sizeof(seconds)) == 0;
+    }
+
+    inline bool operator!=(CronSpec const &rhs) {
+        return !(*this == rhs);
+    }
+
 private:
     bool matches(CronSpec cs) {
         return matches(hours, cs.hours, sizeof(hours)) &&
