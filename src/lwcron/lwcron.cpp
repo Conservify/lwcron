@@ -108,9 +108,11 @@ uint32_t PeriodicTask::getNextTime(DateTime after) {
 CronSpec CronSpec::interval(uint32_t seconds) {
     CronSpec cs;
 
-    for (uint32_t s = 0; s <= SecondsPerDay ; s += seconds) {
-        TimeOfDay tod{ s };
-        cs.set(tod);
+    if (seconds > 0) {
+        for (uint32_t s = 0; s <= SecondsPerDay ; s += seconds) {
+            TimeOfDay tod{ s };
+            cs.set(tod);
+        }
     }
 
     return cs;
