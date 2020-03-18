@@ -6,6 +6,7 @@ namespace lwcron {
 constexpr uint32_t SecondsPerYear = (60 * 60 * 24L * 365);
 constexpr uint32_t SecondsPerDay = 60 * 60 * 24L;
 constexpr uint32_t SecondsPerHour = 3600L;
+constexpr uint32_t RerunThreshold = 30;
 
 constexpr uint8_t DaysInMonth[] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
@@ -210,8 +211,10 @@ Scheduler::TaskAndTime Scheduler::check(DateTime now) {
     last_now_ = now_unix;
 
     if (difference < 0) {
-        begin(now);
-        return { };
+        if (-difference > RerunThreshold) {
+            begin(now);
+            return { };
+        }
     }
 
     for (auto i = (size_t)0; i < size_; i++) {

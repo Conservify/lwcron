@@ -388,3 +388,30 @@ TEST_F(SchedulerSuite, ClockMovingBackwardsResets) {
 
     ASSERT_TRUE(scheduler.check(now + 1));
 }
+
+TEST_F(SchedulerSuite, ClockMovingBackwardsAFewSecondsDoesNotReRun) {
+    PeriodicTask task1{ 150 };
+    Task *tasks[1] = { &task1 };
+    Scheduler scheduler{ tasks };
+
+    auto now = JacobsBirth - 1;
+    scheduler.begin(now);
+
+    ASSERT_FALSE(scheduler.check(now));
+
+    now += 1;
+    ASSERT_TRUE(scheduler.check(now));
+
+    // Next time is 150s after "now"
+    auto n1 = scheduler.nextTask();
+    ASSERT_EQ(n1.time, now.unix_time() + 150);
+
+    // Go back 10 seconds
+    now -= 10;
+
+    ASSERT_FALSE(scheduler.check(now));
+
+    // New next time should be the same as previously.
+    auto n2 = scheduler.nextTask();
+    ASSERT_EQ(n2.time, n1.time);
+}
