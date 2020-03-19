@@ -109,7 +109,7 @@ public:
     virtual void run() = 0;
     virtual bool valid() const = 0;
     virtual bool enabled() const = 0;
-    virtual uint32_t getNextTime(DateTime after) = 0;
+    virtual uint32_t getNextTime(DateTime after, uint32_t seed) = 0;
     virtual void accept(TaskVisitor &visitor) = 0;
     virtual const char *toString() const {
         return "Task<>";
@@ -140,7 +140,7 @@ public:
     void run() override;
     bool valid() const override;
     bool enabled() const override;
-    uint32_t getNextTime(DateTime after) override;
+    uint32_t getNextTime(DateTime after, uint32_t seed) override;
     void accept(TaskVisitor &visitor) override {
         visitor.visit(*this);
     }
@@ -244,12 +244,16 @@ private:
 class CronTask : public Task {
 private:
     CronSpec spec_;
+    uint32_t jitter_;
 
 public:
     CronTask() {
     }
 
     CronTask(CronSpec spec) : spec_(spec) {
+    }
+
+    CronTask(CronSpec spec, uint32_t jitter) : spec_(spec), jitter_(jitter) {
     }
 
 public:
@@ -261,7 +265,7 @@ public:
     void run() override;
     bool valid() const override;
     bool enabled() const override;
-    uint32_t getNextTime(DateTime after) override;
+    uint32_t getNextTime(DateTime after, uint32_t seed) override;
     void accept(TaskVisitor &visitor) override {
         visitor.visit(*this);
     }
@@ -320,12 +324,11 @@ public:
 
     void begin(DateTime now);
 
-    TaskAndTime nextTask(DateTime now);
+    TaskAndTime check(DateTime now, uint32_t seed = 0);
+
+    TaskAndTime nextTask(DateTime now, uint32_t seed = 0);
 
     TaskAndTime nextTask();
-
-    TaskAndTime check(DateTime now);
-
 };
 
 }

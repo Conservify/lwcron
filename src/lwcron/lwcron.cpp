@@ -97,7 +97,7 @@ bool PeriodicTask::enabled() const {
     return true;
 }
 
-uint32_t PeriodicTask::getNextTime(DateTime after) {
+uint32_t PeriodicTask::getNextTime(DateTime after, uint32_t seed) {
     auto seconds = after.unix_time();
     auto r = seconds % interval_;
     if (r == 0) {
@@ -191,20 +191,24 @@ bool CronTask::valid() const {
     return spec_.valid();
 }
 
-uint32_t CronTask::getNextTime(DateTime after) {
-    return spec_.getNextTime(after);
+uint32_t CronTask::getNextTime(DateTime after, uint32_t seed) {
+    auto unjittered = spec_.getNextTime(after);
+    if (jitter_ == 0 || seed == 0) {
+        return unjittered;
+    }
+    return unjittered + (seed % jitter_);
 }
 
 void Scheduler::begin(DateTime now) {
     for (auto i = (size_t)0; i < size_; i++) {
         auto task = tasks_[i];
         if (task->valid() && task->enabled()) {
-            task->scheduled_ = task->getNextTime(now);
+            task->scheduled_ = task->getNextTime(now, 0);
         }
     }
 }
 
-Scheduler::TaskAndTime Scheduler::check(DateTime now) {
+Scheduler::TaskAndTime Scheduler::check(DateTime now, uint32_t seed) {
     auto now_unix = now.unix_time();
     auto difference = (int64_t)now_unix - (int64_t)last_now_;
 
@@ -222,7 +226,7 @@ Scheduler::TaskAndTime Scheduler::check(DateTime now) {
         if (task->valid() && task->enabled()) {
             if (task->scheduled_ <= now_unix) {
                 auto scheduled = task->scheduled_;
-                task->scheduled_ = task->getNextTime(now + 1);
+                task->scheduled_ = task->getNextTime(now + 1, seed);
                 task->run();
                 return TaskAndTime { scheduled, task };
             }
@@ -232,12 +236,12 @@ Scheduler::TaskAndTime Scheduler::check(DateTime now) {
     return { };
 }
 
-Scheduler::TaskAndTime Scheduler::nextTask(DateTime now) {
+Scheduler::TaskAndTime Scheduler::nextTask(DateTime now, uint32_t seed) {
     TaskAndTime found;
     for (auto i = (size_t)0; i < size_; i++) {
         auto task = tasks_[i];
         if (task->valid() && task->enabled()) {
-            auto time = task->getNextTime(now);
+            auto time = task->getNextTime(now, seed);
             if (!found || found.time > time) {
                 found = TaskAndTime { time, task };
             }
