@@ -247,10 +247,10 @@ private:
     uint32_t jitter_;
 
 public:
-    CronTask() {
+    CronTask() : jitter_(0) {
     }
 
-    CronTask(CronSpec spec) : spec_(spec) {
+    CronTask(CronSpec spec) : spec_(spec), jitter_(0) {
     }
 
     CronTask(CronSpec spec, uint32_t jitter) : spec_(spec), jitter_(jitter) {
