@@ -110,7 +110,7 @@ CronSpec CronSpec::interval(uint32_t seconds) {
     CronSpec cs;
 
     if (seconds > 0) {
-        for (uint32_t s = 0; s <= SecondsPerDay ; s += seconds) {
+        for (auto s = 0u; s <= SecondsPerDay; s += seconds) {
             TimeOfDay tod{ s };
             cs.set(tod);
         }
@@ -180,12 +180,17 @@ bool CronTask::enabled() const {
 
 // NOTE: This could be so much better.
 uint32_t CronSpec::getNextTime(DateTime after) const {
+    if (!valid()) {
+        return 0;
+    }
+
     auto unix_time = after.unix_time();
     DateTime date_time{ unix_time };
     auto hour = date_time.hour();
     auto minute = date_time.minute();
     auto second = date_time.second();
     auto seconds = 0u;
+
     while (seconds < 86400) {
         CronSpec cs{ hour, minute, second };
         cs.set(TimeOfDay{ hour, minute, second });
